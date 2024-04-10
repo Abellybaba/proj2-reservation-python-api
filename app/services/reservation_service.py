@@ -1,11 +1,11 @@
 import sqlite3
 
-def add_reservation(user_id, restaurant_id, date, time, party_size, status, special_requests, db_file="restaurant_reservation.db"):
+def add_reservation(user_id, restaurant_id, date, time, party_size, special_requests, db_file="restaurant_reservation.db"):
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
     
-    cursor.execute("INSERT INTO reservations (user_id, restaurant_id, date, time, party_size, status, special_requests) VALUES (?, ?, ?, ?, ?, ?, ?)", 
-                   (user_id, restaurant_id, date, time, party_size, status, special_requests))
+    cursor.execute("INSERT INTO reservations (user_id, restaurant_id, date, time, party_size, special_requests) VALUES (?, ?, ?, ?, ?, ?)", 
+                   (user_id, restaurant_id, date, time, party_size, special_requests))
     conn.commit()
     reservation_id = cursor.lastrowid
     conn.close()

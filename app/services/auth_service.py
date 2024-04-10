@@ -4,6 +4,7 @@ import sqlite3
 import secrets
 import hashlib
 
+#full columns details
 # def register_user(username, password, role, email, first_name, last_name, phone_number, address, img, db_file="restaurant_reservation.db"):
 #     conn = sqlite3.connect(db_file)
 #     cursor = conn.cursor()
@@ -17,6 +18,8 @@ import hashlib
     
 #     return user_id
 
+
+
 def register_user(username, password, email, fullname, db_file="restaurant_reservation.db"):
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
@@ -29,7 +32,6 @@ def register_user(username, password, email, fullname, db_file="restaurant_reser
     conn.close()
     
     return user_id
-
 
 
 def login_user(username, password, db_file="restaurant_reservation.db"):

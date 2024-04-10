@@ -9,16 +9,16 @@ from app.services import table_service
 from app.services import restaurant_service
 from app.services import reservation_service
 from app.db import models
-from app.routes import reservation, restaurant, table
+from app.routes import reservation, restaurant, table, auth
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
 
 
-class SimpleHTTPRequestHandler(BaseHTTPRequestHandler, restaurant.RestaurantHandler, table.TableHandler, reservation.ReservationHandler):
+class SimpleHTTPRequestHandler(BaseHTTPRequestHandler, restaurant.RestaurantHandler, table.TableHandler, reservation.ReservationHandler, auth.AuthHandler):
     
     def end_headers(self):
-        self.send_header('Access-Control-Allow-Origin', 'http://localhost:3000, *')
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-type, Authorization')
         BaseHTTPRequestHandler.end_headers(self)
@@ -39,6 +39,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler, restaurant.RestaurantHand
             if not self.authenticate():
                 return
             self.handle_get_all_restaurants()
+        elif self.path.startswith('/user/'):
+            user_id = self.path.split('/')[-1]
+            if user_id.isdigit():
+                self.handle_get_user_by_id(user_id)
+            else:
+                self.send_error(400, 'Invalid table ID')
         elif self.path.startswith('/table/'):
             table_id = self.path.split('/')[-1]
             if table_id.isdigit():
@@ -145,28 +151,28 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler, restaurant.RestaurantHand
             else:
                 self.send_error(400, 'Invalid reservation ID')
                 
-    def handle_register(self):
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-            data = json.loads(post_data.decode('utf-8'))
+    # def handle_register(self): #adding hashed password
+    #         content_length = int(self.headers['Content-Length'])
+    #         post_data = self.rfile.read(content_length)
+    #         data = json.loads(post_data.decode('utf-8'))
 
-            if not all(key in data for key in ['username', 'password', 'email', 'fullname']):
-                self.send_error(400, 'Missing registration information')
-                return
+    #         if not all(key in data for key in ['username', 'password', 'email', 'fullname']):
+    #             self.send_error(400, 'Missing registration information')
+    #             return
             
-            # Hash the password before registration
-            # hashed_password = auth_service.hash_password(password)
+    #         # Hash the password before registration
+    #         # hashed_password = auth_service.hash_password(password)
 
-            user_id = auth_service.register_user(data['username'], data['password'], data['email'], data['fullname'])
+    #         user_id = auth_service.register_user(data['username'], data['password'], data['email'], data['fullname'])
 
-            if user_id:
-                self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                response = {"message": "User registered successfully", "user_id": user_id}
-                self.wfile.write(json.dumps(response).encode('utf-8'))
-            else:
-                self.send_error(400, 'Registration failed')
+    #         if user_id:
+    #             self.send_response(200)
+    #             self.send_header('Content-type', 'application/json')
+    #             self.end_headers()
+    #             response = {"message": "User registered successfully", "user_id": user_id}
+    #             self.wfile.write(json.dumps(response).encode('utf-8'))
+    #         else:
+    #             self.send_error(400, 'Registration failed')
 
 
     # def handle_register(self):
@@ -214,8 +220,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler, restaurant.RestaurantHand
             self.wfile.write(json.dumps({'error': 'An error occurred'}).encode('utf-8'))
 
 
-
-    def handle_login(self):
+        #returns user info
+    def handle_login(self): 
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
         data = json.loads(post_data.decode('utf-8'))
@@ -239,27 +245,27 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler, restaurant.RestaurantHand
         
 
 
-    # def handle_register(self):
-    #     content_length = int(self.headers['Content-Length'])
-    #     post_data = self.rfile.read(content_length)
-    #     data = json.loads(post_data.decode('utf-8'))
+    def handle_register(self):
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length)
+        data = json.loads(post_data.decode('utf-8'))
 
-    #     if not all(key in data for key in ['username', 'password', 'role', 'email', 'fullname']):
-    #         self.send_error(400, 'Missing registration information')
-    #         return
+        if not all(key in data for key in ['username', 'password', 'email', 'fullname']):
+            self.send_error(400, 'Missing registration information')
+            return
 
-    #     user_id = auth_service.register_user(data['username'], data['password'], data['role'], data['email'], data['fullname'])
+        # user_id = auth_service.register_user(data['username'], data['password'], data['role'], data['email'], data['fullname'])
+        user_id = auth_service.register_user(data['username'], data['password'], data['email'], data['fullname'])
+        if user_id:
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            response = {"message": "User registered successfully", "user_id": user_id}
+            self.wfile.write(json.dumps(response).encode('utf-8'))
+        else:
+            self.send_error(400, 'Registration failed')
 
-    #     if user_id:
-    #         self.send_response(200)
-    #         self.send_header('Content-type', 'application/json')
-    #         self.end_headers()
-    #         response = {"message": "User registered successfully", "user_id": user_id}
-    #         self.wfile.write(json.dumps(response).encode('utf-8'))
-    #     else:
-    #         self.send_error(400, 'Registration failed')
-
-
+#no user info return
     # def handle_login(self):
     #     content_length = int(self.headers['Content-Length'])
     #     post_data = self.rfile.read(content_length)

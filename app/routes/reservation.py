@@ -3,6 +3,7 @@ import json
 from http.server import BaseHTTPRequestHandler
 from app.services import auth_service
 from app.services import reservation_service
+from app.utils import email_utils
 
 class ReservationHandler:
     
@@ -15,13 +16,21 @@ class ReservationHandler:
         data = json.loads(post_data.decode('utf-8'))
 
         # Assuming the data includes user_id, restaurant_id, date, time, party_size, status, special_requests
-        reservation_id = reservation_service.add_reservation(data['user_id'], data['restaurant_id'], data['date'], data['time'], data['party_size'], data['status'], data['special_requests'])
+        reservation_info = reservation_service.add_reservation(data['user_id'], data['restaurant_id'], data['date'], data['time'], data['party_size'], data['special_requests'])
         
-        if reservation_id:
+        if reservation_info:
+            # Fetch user information to get the email
+            user_info = auth_service.get_user_info_by_id(data['user_id'])
+            if user_info:
+                recipient_email = user_info['email']
+                subject = 'Reservation Confirmation'
+                message_body = f"Your reservation has been successfully added."
+                email_utils.send_email(recipient_email, subject, message_body)
+            
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps({"message": "Reservation added successfully", "reservation_id": reservation_id}).encode('utf-8'))
+            self.wfile.write(json.dumps({"message": "Reservation added successfully", "reservation_id": reservation_info}).encode('utf-8'))
         else:
             self.send_error(400, 'Failed to add reservation')
 
@@ -40,6 +49,7 @@ class ReservationHandler:
         self.end_headers()
         self.wfile.write(json.dumps({"message": "Reservation updated successfully"}).encode('utf-8'))
 
+#old version
     # def handle_update_reservation(self, reservation_id):
     #     content_length = int(self.headers['Content-Length'])
     #     post_data = self.rfile.read(content_length)

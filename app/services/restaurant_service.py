@@ -1,6 +1,24 @@
 import sqlite3
 from app.services import auth_service
 
+# def add_restaurant(user_id, name, address, contact, opening_hours, img, description, menu_items, db_file="restaurant_reservation.db"):
+#     # Check if the user has admin privileges
+#     if not auth_service.is_admin(user_id):
+#         return None  # Or raise an exception
+
+#     conn = sqlite3.connect(db_file)
+#     cursor = conn.cursor()
+
+#     # Proceed with adding the restaurant if the user is an admin
+#     cursor.execute("INSERT INTO restaurants (user_id, name, address, contact, opening_hours, img, description, menu_items) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+#                    (user_id, name, address, contact, opening_hours, img, description, menu_items))
+#     conn.commit()
+#     restaurant_info = cursor.lastrowid
+#     conn.close()
+
+#     return restaurant_info
+
+
 def add_restaurant(user_id, name, address, contact, opening_hours, img, description, menu_items, db_file="restaurant_reservation.db"):
     # Check if the user has admin privileges
     if not auth_service.is_admin(user_id):

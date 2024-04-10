@@ -9,34 +9,34 @@ from app.services import table_service
 class RestaurantHandler:
     
     
-    def handle_add_restaurant(self):
-        if not self.authenticate():
-            return
+    # def handle_add_restaurant(self):
+    #     if not self.authenticate():
+    #         return
         
-        content_length = int(self.headers['Content-Length'])
-        post_data = self.rfile.read(content_length)
-        data = json.loads(post_data.decode('utf-8'))
+    #     content_length = int(self.headers['Content-Length'])
+    #     post_data = self.rfile.read(content_length)
+    #     data = json.loads(post_data.decode('utf-8'))
 
-        # required_fields = ['name', 'address', 'contact', 'opening_hours', 'img', 'desc', 'menu_items']
-        # if not all(field in data for field in required_fields):
-        #     self.send_error(400, 'Missing data for restaurant creation')
-        #     return
+    #     # required_fields = ['name', 'address', 'contact', 'opening_hours', 'img', 'desc', 'menu_items']
+    #     # if not all(field in data for field in required_fields):
+    #     #     self.send_error(400, 'Missing data for restaurant creation')
+    #     #     return
 
-        user_id = data.get('user_id')  # Assuming user_id is provided in the data
-        # if not auth_service.is_admin(user_id):
-        #     self.send_error(403, 'Only admins can add restaurants')
-        #     return
+    #     user_id = data.get('user_id')  # Assuming user_id is provided in the data
+    #     # if not auth_service.is_admin(user_id):
+    #     #     self.send_error(403, 'Only admins can add restaurants')
+    #     #     return
 
-        restaurant_data = restaurant_service.add_restaurant(user_id, data['name'], data['address'], data['contact'], data['opening_hours'], data['img'], data['description'], data['menu_items'])
+    #     restaurant_data = restaurant_service.add_restaurant(user_id, data['name'], data['address'], data['contact'], data['opening_hours'], data['img'], data['description'], data['menu_items'])
 
-        if restaurant_data:
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            response = {"message": "Restaurant added successfully", "restaurant_data": restaurant_data}
-            self.wfile.write(json.dumps(response).encode('utf-8'))
-        else:
-            self.send_error(500, 'Failed to add restaurant')
+    #     if restaurant_data:
+    #         self.send_response(200)
+    #         self.send_header('Content-type', 'application/json')
+    #         self.end_headers()
+    #         response = {"message": "Restaurant added successfully", "restaurant_data": restaurant_data}
+    #         self.wfile.write(json.dumps(response).encode('utf-8'))
+    #     else:
+    #         self.send_error(500, 'Failed to add restaurant')
 
 
     # def handle_add_restaurant(self):
@@ -66,6 +66,29 @@ class RestaurantHandler:
     #             self.send_error(500, 'Failed to add restaurant')
     #     else:
     #         self.send_error(400, 'No data provided for restaurant creation')
+
+
+    def handle_add_restaurant(self):
+        if not self.authenticate():
+            return
+
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length)
+        data = json.loads(post_data.decode('utf-8'))
+
+        user_id = data.get('user_id')  # Assuming user_id is provided in the data
+
+        # Call the service layer function to add the restaurant
+        restaurant_info = restaurant_service.add_restaurant(user_id, data['name'], data['address'], data['contact'], data['opening_hours'], data['img'], data['description'], data['menu_items'])
+
+        if restaurant_info:
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            response = {"message": "Restaurant added successfully", "restaurant_id": restaurant_info}
+            self.wfile.write(json.dumps(response).encode('utf-8'))
+        else:
+            self.send_error(500, 'Failed to add restaurant')
 
 
     def handle_update_restaurant(self):
